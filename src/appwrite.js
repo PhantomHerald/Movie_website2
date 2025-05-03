@@ -1,4 +1,5 @@
 import { Client, Databases, Query, ID } from "appwrite";
+import { data } from "autoprefixer";
 
 const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID;
@@ -37,3 +38,16 @@ export const updatesearchcount = async (searchTerm, movie) => {
     console.error(`Error updating search count: ${error.message}`);
   }
 };
+export const getTrendingMovies = async () => {
+    try {
+        const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
+            Query.orderDesc('count'),
+            Query.limit(10),
+
+        ]);
+        return result.documents;
+    } catch (error) {
+        console.error(`Error fetching trending movies: ${error.message}`);
+        
+    }
+}

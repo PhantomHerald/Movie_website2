@@ -4,6 +4,7 @@ import Spinner from "./components/spinner.jsx";
 import MovieCard from "./components/moviecard.jsx";
 import { useDebounce } from "react-use";
 import { updatesearchcount } from "./appwrite.js";
+import { getTrendingMovies } from "./appwrite.js";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -20,6 +21,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [trendingMovies, setTrendingMovies] = useState([]);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
 
@@ -65,10 +67,26 @@ function App() {
       setLoading(false);
     }
   };
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+
+      setTrendingMovies(movies);
+    } catch (error) {
+      console.error(`Error fetching trending movies: ${error}`);
+      
+      
+    }
+  }
+
 
   useEffect(() => {
-    fetchMovies(searchTerm);
-  }, [searchTerm]);
+    fetchMovies(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
+  useEffect(() => { 
+    loadTrendingMovies();
+  }, []);
 
   return (
     <main>
@@ -79,9 +97,24 @@ function App() {
             <h1>Find <span className="text-gradient">movies</span> without hassle</h1>
             <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </header>
+          {trendingMovies.length > 0 && (
+            <section className="trending">
+              <h2>Trending Movies</h2>
+              <ul>
+                {trendingMovies.map((movie, index) => (
+                  <li key={movie.$id}>
+                    <p>{index + 1}</p>
+                    <img src={movie.poster_url} alt={movie.title || "Trending movie"} />
+                    <p>{movie.title}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <section></section>
 
           <section className="all-movies">
-            <h2 className="mt-4 text-2xl font-bold text-amber-50">
+            <h2 className="m text-2xl font-bold text-amber-50">
               <br />All Movies
             </h2>
             {loading ? (
